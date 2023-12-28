@@ -1,0 +1,17 @@
+{
+  "small_explosion": {
+    "category": "blocks",
+    "subtitle": "tutorialmod.small_explosion",
+    "sounds": [
+      "tutorialmod:small_explosion"
+    ]
+  },
+  "bar_brawl": {
+    "sounds": [
+      {
+        "name": "tutorialmod:bar_brawl",
+        "stream": true
+      }
+    ]
+  }
+}
