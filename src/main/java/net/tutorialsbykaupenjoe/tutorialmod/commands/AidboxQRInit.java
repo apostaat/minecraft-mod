@@ -18,35 +18,35 @@ import java.util.Base64;
 public class AidboxQRInit {
     public AidboxQRInit(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
-                Commands.literal("aidboxinit")
-                        .then(Commands.argument("arg1", StringArgumentType.word())
-                                .then(Commands.argument("arg2", StringArgumentType.word())
+                            Commands.literal("aidboxinit")
+                            .then(Commands.argument("Player Name", StringArgumentType.word())
+                                  .then(Commands.argument("Player's Answer", StringArgumentType.word())
                                         .executes(context -> initAidboxQR(
-                                                context.getSource(),
-                                                StringArgumentType.getString(context, "arg1"),
-                                                StringArgumentType.getString(context, "arg2"))))));
+                                                                          context.getSource(),
+                                                                          StringArgumentType.getString(context, "Player Name"),
+                                                                          StringArgumentType.getString(context, "Player's Answer"))))));
     }
 
-    private int initAidboxQR(CommandSource source, String arg1, String arg2) 
-    throws CommandSyntaxException {
-        ServerPlayerEntity player = source.asPlayer();
-        String playerId = player.getGameProfile().getId().toString();
-        String playerName = player.getGameProfile().getName();
-        sendPlayerDataToServer(source, playerId, playerName, arg1);
+    private int initAidboxQR(CommandSource source, String playerName, String playerAnswer)
+        throws CommandSyntaxException {
+        // ServerPlayerEntity player = source.asPlayer();
+        // String playerId = player.getGameProfile().getId().toString();
+        // String playerName = player.getGameProfile().getName();
+        source.sendFeedback(new StringTextComponent("Player Name:" + playerName), true);
+        source.sendFeedback(new StringTextComponent("Player Answer:" + playerAnswer), true);
+        sendPlayerDataToServer(playerName, playerAnswer);
+        source.sendFeedback(new StringTextComponent("SUCCESS!!!"), true);
 
-        source.sendFeedback(new StringTextComponent("Player ID: " + playerId), true);
-        source.sendFeedback(new StringTextComponent("Player Name: " + playerName), true);
-        source.sendFeedback(new StringTextComponent("Command: /aidboxinit " + arg1 + " " + arg2), true);
+        // source.sendFeedback(new StringTextComponent("Player ID: " + playerId), true);
+        // source.sendFeedback(new StringTextComponent("Player Name: " + playerName), true);
+        // source.sendFeedback(new StringTextComponent("Command: /aidboxinit " + arg1 + " " + arg2), true);
         
         return 1;
     }
 
-    private void sendPlayerDataToServer(CommandSource source, String playerId, String playerName, String arg1) {
+    private void sendPlayerDataToServer(String playerName, String playerAnswer) {
         try {
-            //Auth Bullshit:
 
-            String username = "go-cath-lab";
-            String password = "gE4RwD"; 
             String authString = username + ":" + password;
             String encodedAuthString = Base64.getEncoder().encodeToString(authString.getBytes());
             String authHeaderValue = "Basic " + encodedAuthString;
@@ -66,14 +66,14 @@ public class AidboxQRInit {
             questUrlConnection.setRequestMethod("PUT");
             questUrlConnection.setRequestProperty("Content-Type", "application/json");
             questUrlConnection.setDoOutput(true);
-            
-            String patientRespFmt = "{\"id\":\"%s\",\"name\":[{\"use\":\"nickname\",\"text\":\"%s\"}]}";
-            String questRespFmt = "{\"status\":\"completed\",\"subject\":{\"resourceType\":\"Patient\",\"id\":\"%s\"},\"authored\":\"2023-12-28\",\"item\":[{\"linkId\":\"1\",\"answer\":[{\"value\":{\"string\":\"%s\"}}]}]}";
-            
-            String patientJsonPayload = String.format(patientRespFmt,playerId,playerName);
-            String questRespJsonPayload = String.format(questRespFmt,playerId, arg1);
 
-           try (OutputStream os = patientConnection.getOutputStream()) {
+            String patientRespFmt = "{\"id\":\"%s\",\"name\":[{\"use\":\"nickname\",\"text\":\"%s\"}]}";
+            String questRespFmt = "{\"status\":\"completed\",\"subject\":{\"resourceType\":\"Patient\",\"id\":\"%s\"},\"authored\":\"2023-12-29\",\"item\":[{\"linkId\":\"1\",\"answer\":[{\"value\":{\"string\":\"%s\"}}]}]}";
+            
+            String patientJsonPayload = String.format(patientRespFmt,playerName,playerName);
+            String questRespJsonPayload = String.format(questRespFmt,playerName,playerAnswer);
+
+            try (OutputStream os = patientConnection.getOutputStream()) {
                 byte[] input = patientJsonPayload.getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
@@ -89,9 +89,9 @@ public class AidboxQRInit {
             patientConnection.disconnect();
             questUrlConnection.disconnect();
 
-            String result = "HTTP Response Codes: " + patientResponseCode + questResponseCode; 
+            // String result = "HTTP Response Codes: " + patientResponseCode + questResponseCode;
 
-            source.sendFeedback(new StringTextComponent(result), true);
+            // source.sendFeedback(new StringTextComponent(result), true);
 
             
 
